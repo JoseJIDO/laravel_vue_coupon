@@ -1,0 +1,60 @@
+/*@import url("../../../../bower_components/bootstrap/dist/css/bootstrap.min.css");*/
+
+#print .container {
+    margin: 0px !important;
+    padding: 0px !important;
+}
+
+body#print {
+    font-family: Calibri, sans-serif;
+    font-size: 14px !important;
+    margin-left: 1cm;
+    margin-right: 1cm;
+}
+
+body#print .page-header {
+    margin: 20px 0 10px;
+    padding-bottom: 0;
+    border-bottom: 1px solid #eee;
+}
+
+/*body#print dl{
+    margin-bottom: 0;
+}*/
+
+body#print .dl-horizontal dt {
+    float: left;
+    width: 150px;
+    clear: left;
+    text-align: right;
+    /*overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;*/
+    font-weight: normal;
+}
+
+body#print .dl-horizontal dd {
+    margin-left: 170px;
+    margin-bottom: 20px;
+    font-weight: 300;
+    line-height: 1.4;
+}
+
+body#print dd {
+    margin-bottom: 10px;
+}
+
+body#print .dl-horizontal dd.no-margin {
+    margin-left: 0;
+}
+
+.page-header h3{
+    /*font-weight: bold;*/
+    font-size: 18px !important;
+}
+
+body#print .area-title{
+    font-weight: bold;
+    font-size: 23px;
+    text-transform: uppercase;
+}
