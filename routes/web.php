@@ -23,3 +23,4 @@ Route::group(['middleware' => 'user.session'], function () {
 });
 
 
+Route::get('/adm',[CouponController::class, 'index'])->name('adm');

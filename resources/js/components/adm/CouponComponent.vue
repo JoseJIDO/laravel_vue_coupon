@@ -87,12 +87,8 @@
         {{ row.value.first }} {{ row.value.last }}
       </template>
 
-      <template #cell(editar)="row">
-        <b-button
-          size="sm"
-          variant="warning"
-          @click="editOportunidade(row.item)"
-        >
+      <template #cell(edit)="row">
+        <b-button size="sm" variant="warning" @click="editCoupon(row.item)">
           <b-icon icon="pencil-square" aria-hidden="true"></b-icon>
         </b-button>
       </template>
@@ -108,11 +104,14 @@
       </template>
     </b-table>
 
+    <!-- Modal register new coupon -->
     <b-modal
       id="modal-scrollable"
       v-model="showModalSave"
-      scrollable
-      title="Nova Oportunidade"
+      variant="primary"
+      :header-bg-variant="headerBgVariant"
+      :header-text-variant="headerTextVariant"
+      title="Registrar cupón"
       size="xl"
       hide-footer
     >
@@ -120,152 +119,376 @@
       <div class="d-block text-center"></div>
       <hr />
       <b-col>
-        <form>
+        <form @submit.prevent="validateForm('SAVE')">
           <b-form>
             <b-row>
-              <!-- INPUT JORNADA -->
+              <!-- INPUT NAME -->
               <b-col>
                 <b-form-group
-                  id="input-group-local"
-                  label="Jornada"
-                  label-for="input-local"
+                  id="input-group-coupon"
+                  label="Nombre"
+                  label-for="input-coupon"
                 >
                   <b-form-input
-                    id="input-jornada"
+                    id="input-coupon"
                     type="text"
-                    placeholder="Jornada"
-                    v-model="form.cupon"
+                    placeholder="Nombre"
+                    v-model="form.COUPON"
                     required
                   ></b-form-input>
                 </b-form-group>
               </b-col>
+            </b-row>
+            <b-row>
+              <!--COL INPUT TYPE -->
+              <b-col>
+                <b-form-group label="Tipo:" label-for="input-type">
+                  <b-form-select
+                    required
+                    v-model="form.TYPE"
+                    :options="typeCoupon"
+                  ></b-form-select>
+                </b-form-group>
+              </b-col>
 
-              <!-- INPUT BOLSA -->
+              <!--COL INPUT TYPE -->
               <b-col>
                 <b-form-group
-                  id="input-group-salario"
-                  label="Bolsa Salário"
-                  label-for="input-bolsa"
+                  id="input-group-value"
+                  label="Valor:"
+                  label-for="input-value"
                 >
                   <b-form-input
-                    id="input-bolsa"
+                    id="input-value"
                     type="number"
-                    placeholder="Bolsa Salário"
+                    placeholder="Valor"
+                    v-model="form.VALUE"
                     required
                   ></b-form-input>
                 </b-form-group>
               </b-col>
             </b-row>
 
-            <!-- INPUT DESCRICAO -->
-            <b-form-group
-              id="input-group-descricao"
-              label="Descrição"
-              label-for="input-descricao"
-              description="Descrição da oportunidade"
-            >
-              <b-form-textarea
-                id="input-descricao"
-                type="text"
-                placeholder="Descrição"
-                required
-              ></b-form-textarea>
-            </b-form-group>
-
-            <!-- INPUT CONTATO -->
-            <b-form-group
-              id="input-group-contato"
-              label="Contato"
-              label-for="input-contato"
-              description="Contato"
-            >
-              <b-form-textarea
-                id="input-contato"
-                type="text"
-                placeholder="Contato"
-                required
-              ></b-form-textarea>
-            </b-form-group>
-
-            <!-- INPUT HABILIDADES -->
-            <b-form-group
-              id="input-group-habilidades"
-              label="Habilidades"
-              label-for="input-habilidades"
-              description="Descrever quais habilidades são fundamentais"
-            >
-              <b-form-textarea
-                id="input-bolsa"
-                type="text"
-                placeholder="Habilidades"
-                required
-              ></b-form-textarea>
-            </b-form-group>
-
-            <!-- ROW DATAS -->
+            <!-- ROW USE LIMIT -->
             <b-row>
+              <b-col md="2">
+                <b-form-checkbox
+                  id="checkbox-limit-use"
+                  v-model="form.LIMIT"
+                  name="checkbox-limit-use"
+                  value="true"
+                  unchecked-value="false"
+                  >¿El Cupón tendrá un límite de uso?
+                </b-form-checkbox>
+              </b-col>
+              <b-col md="2" style="heigth: 80px">
+                <b-form-group
+                  id="input-group-value-limit"
+                >
+                  <b-form-input
+                    :readonly="form.LIMIT == 'false' || form.LIMIT == ''"
+                    id="input-value-limit"
+                    type="number"
+                    placeholder="Límite "
+                    v-model="form.LIMIT_VALUE"
+                    required
+                  ></b-form-input>
+                </b-form-group>
+              </b-col>
+            </b-row>
+            <br />
+            <br />
+            <!-- ROW DATES -->
+            <b-row>
+              <!-- EXPIRATION DATE -->
               <b-col>
-                <label for="date-expiration">Fecha de Expiración</label>
+                <label for="date-expiration">Fecha de vencimiento: </label>
                 <b-form-datepicker
                   id="date-expiration"
+                  v-model="form.DATE_EXPIRATION"
                   class="mb-2"
                 ></b-form-datepicker>
               </b-col>
             </b-row>
+
+            <!-- INPUT DESCRIPTION -->
+            <b-form-group
+              id="input-group-description"
+              label="Descripción:"
+              label-for="input-description"
+              description="Describa la descripción del cupón"
+            >
+              <b-form-textarea
+                id="input-description"
+                type="text"
+                v-model="form.DESCRIPTION"
+                placeholder="Descripción"
+                required
+              ></b-form-textarea>
+            </b-form-group>
           </b-form>
 
           <load-component :isVisible="load" :text="textLoad" />
-          <button
-            type="submit"
-            size="sm"
-            class="btn btn-primary"
-          >
+          <button type="submit" size="sm" class="btn btn-primary">
             Salvar
           </button>
         </form>
       </b-col>
     </b-modal>
+
+    <!-- Modal edit a coupon -->
+    <b-modal
+      id="modal-scrollable"
+      v-model="showModalEdit"
+      variant="primary"
+      :header-bg-variant="headerBgVariant"
+      :header-text-variant="headerTextVariant"
+      title="Editar cupón"
+      size="xl"
+      hide-footer
+    >
+      <template #modal-title> Editar cupón </template>
+      <div class="d-block text-center"></div>
+      <hr />
+      <b-col>
+        <form @submit.prevent="validateForm('EDIT')">
+          <b-form>
+            <b-row>
+              <!-- INPUT COD -->
+              <b-col>
+                <b-form-group
+                  id="input-group-cod"
+                  label="Cod."
+                  label-for="input-cod"
+                >
+                  <b-form-input
+                    id="input-cod"
+                    type="text"
+                    placeholder="Cod."
+                    v-model="itemsEdit.COD"
+                    required
+                  ></b-form-input>
+                </b-form-group>
+              </b-col>
+
+              <!-- INPUT COUPON -->
+              <b-col>
+                <b-form-group
+                  id="input-group-coupon"
+                  label="Nombre"
+                  label-for="input-coupon"
+                >
+                  <b-form-input
+                    id="input-coupon"
+                    type="text"
+                    placeholder="Nombre"
+                    v-model="itemsEdit.COUPON"
+                    required
+                  ></b-form-input>
+                </b-form-group>
+              </b-col>
+            </b-row>
+
+            <!-- ROW DATES -->
+            <b-row>
+              <!-- DATE EXPIRATION -->
+              <b-col>
+                <label for="date-expiration">Fecha de vencimiento</label>
+                <b-form-datepicker
+                  id="date-expiration"
+                  v-model="itemsEdit.DATE_EXPIRATION"
+                  class="mb-2"
+                ></b-form-datepicker>
+              </b-col>
+            </b-row>
+
+            <!-- INPUT DESCRIPTION -->
+            <b-form-group
+              id="input-group-description"
+              label="Descripción"
+              label-for="input-description"
+              description="Describa la descripción del cupón"
+            >
+              <b-form-textarea
+                id="input-description"
+                type="text"
+                placeholder="Descripción"
+                v-model="itemsEdit.DESCRIPTION"
+                required
+              ></b-form-textarea>
+            </b-form-group>
+          </b-form>
+
+          <load-component :isVisible="load" :text="textLoad" />
+          <button type="submit" size="sm" class="btn btn-primary">
+            Salvar
+          </button>
+        </form>
+      </b-col>
+    </b-modal>
+
+    <!-- Modal remove coupon -->
+    <b-modal
+      id="bv-modal-remove-oportunidade"
+      v-model="showModalRemove"
+      hide-footer
+    >
+      <template #modal-title> Eliminar cupón </template>
+      <div class="d-block text-center">
+        <p style="font-size: 12px">
+          ¿Realmente quieres eliminar este cupón {{ itemsEdit.COUPON }}?
+        </p>
+      </div>
+      <b-button class="sm" variant="danger" block @click="remove(itemsEdit.COD)"
+        >Remover</b-button
+      >
+    </b-modal>
+    <!-- Modal remove coupon -->
   </div>
 </template>
-
-
-
-
 
 <script>
 export default {
   data() {
     return {
+      typeCoupon: [
+        { text: "Monto", value: "monto" },
+        { text: "Porcentaje", value: "porcent" },
+      ],
+
+      // Controls styles modal
+      headerBgVariant: "primary",
+      headerTextVariant: "light",
+
+      // Modal properties
+      showModalRemove: false,
+      showModalEdit: false,
       showModalSave: false,
+
+      // Controls properties utils components
       load: false,
       textLoad: "",
-      items: [],
+
+      // Items data table
+      itemCoupon: [],
+      items: [
+        {
+          COD: 23456,
+          COUPON: "10* off day",
+          DESCRIPTION: "Cupón campaña de verano.",
+          DATE_EXPIRATION: new Date("2022-01-31"),
+        },
+        {
+          COD: 23456,
+          COUPON: "30* off day",
+          DESCRIPTION: "cupón de descuento de fin de semana",
+          DATE_EXPIRATION: new Date("2022-01-31"),
+        },
+        {
+          COD: 23457,
+          COUPON: "40* off day",
+          DESCRIPTION: "Cupón campaña de verano.",
+          DATE_EXPIRATION: new Date("2022-01-31"),
+        },
+        {
+          COD: 23478,
+          COUPON: "50* off day",
+          DESCRIPTION: "cupón de descuento de fin de semana",
+          DATE_EXPIRATION: new Date("2022-01-31"),
+        },
+        {
+          COD: 23478,
+          COUPON: "50* off day",
+          DESCRIPTION: "cupón de descuento de fin de semana",
+          DATE_EXPIRATION: new Date("2022-01-31"),
+        },
+        {
+          COD: 23478,
+          COUPON: "50* off day",
+          DESCRIPTION: "cupón de descuento de fin de semana",
+          DATE_EXPIRATION: new Date("2022-01-31"),
+        },
+        {
+          COD: 23478,
+          COUPON: "50* off day",
+          DESCRIPTION: "cupón de descuento de fin de semana",
+          DATE_EXPIRATION: new Date("2022-01-31"),
+        },
+        {
+          COD: 23478,
+          COUPON: "50* off day",
+          DESCRIPTION: "cupón de descuento de fin de semana",
+          DATE_EXPIRATION: new Date("2022-01-31"),
+        },
+        {
+          COD: 23478,
+          COUPON: "50* off day",
+          DESCRIPTION: "cupón de descuento de fin de semana",
+          DATE_EXPIRATION: new Date("2022-01-31"),
+        },
+        {
+          COD: 23478,
+          COUPON: "50* off day",
+          DESCRIPTION: "cupón de descuento de fin de semana",
+          DATE_EXPIRATION: new Date("2022-01-31"),
+        },
+        {
+          COD: 23478,
+          COUPON: "50* off day",
+          DESCRIPTION: "cupón de descuento de fin de semana",
+          DATE_EXPIRATION: new Date("2022-01-31"),
+        },
+        {
+          COD: 23478,
+          COUPON: "50* off day",
+          DESCRIPTION: "cupón de descuento de fin de semana",
+          DATE_EXPIRATION: new Date("2022-01-31"),
+        },
+      ],
+      itemsEdit: { COD: "", COUPON: "", DATE_EXPIRATION: "", DESCRIPTION: "" },
       form: {
-        cupon: "",
+        COUPON: "",
+        TYPE: "",
+        VALUE: "",
+        DATE_EXPIRATION: "",
+        DESCRIPTION: "",
+        LIMIT: "",
+        LIMIT_VALUE: "",
       },
+
+      // Fields data table
       fields: [
         {
-          key: "cod",
+          key: "COD",
           label: "Cod",
           sortable: true,
           sortDirection: "desc",
         },
         {
-          key: "cupon",
-          label: "Cupón",
+          key: "COUPON",
+          label: "Descrición",
           sortable: true,
           sortDirection: "desc",
         },
         {
-          key: "dateExpiration",
-          label: "Fecha de expiración",
+          key: "DESCRIPTION",
+          label: "Descrición",
           sortable: true,
           sortDirection: "desc",
         },
-        { key: "editar", label: "Editar" },
+        {
+          key: "DATE_EXPIRATION",
+          label: "Fecha de vencimiento",
+          sortable: true,
+          sortDirection: "desc",
+        },
+
+        { key: "edit", label: "Editar" },
         { key: "delete", label: "Eliminar" },
       ],
-      totalRows: 1,
+
+      // Properties data table
+     totalRows: 1,
       currentPage: 1,
       perPage: 10,
       pageOptions: [5, 10, 15, 20, 30],
@@ -276,7 +499,39 @@ export default {
       filterOn: [],
     };
   },
+  async mounted() {
+    await this.getCoupons();
+
+    // Set the initial number of items data table
+    this.totalRows = this.items.length;
+  },
   methods: {
+    async getCoupons() {
+      this.load = true;
+      this.textLoad = "Cargando informacion...";
+      console.log(this.load);
+      setTimeout((this.load = false), 3000);
+    },
+
+    async editCoupon(item) {
+      //this.load = true;
+      console.log("ITEM TO EDIT:" + item.NAME);
+
+      this.modalShow(item, "EDIT");
+    },
+
+    async save() {
+      this.showModalSave = !this.showModalSave;
+      Toast.fire({
+        icon: "success",
+        title: "¡Cupón registrado con éxito!",
+      });
+    },
+
+    async update() {},
+
+    async remove() {},
+
     onFiltered(filteredItems) {
       // Trigger pagination to update the number of buttons/pages due to filtering
       this.totalRows = filteredItems.length;
@@ -284,6 +539,42 @@ export default {
     },
     showModalRegister() {
       this.showModalSave = true;
+    },
+    validateForm(typeRequest) {
+      if (typeRequest == "SAVE") {
+        if (this.form.COUPON == "") {
+          Toast.fire({
+            icon: "warning",
+            title: "informar el nombre!",
+          });
+          return;
+        }
+        if (this.form.DESCRIPTION == "") {
+          Toast.fire({
+            icon: "warning",
+            title: "informar la descripción!",
+          });
+          return;
+        }
+
+        if (this.form.DATE_EXPIRATION == "") {
+          Toast.fire({
+            icon: "warning",
+            title: "Informar la fecha de vencimiento!",
+          });
+          return;
+        }
+
+        this.save();
+      } else {
+        this.update();
+      }
+    },
+    modalShow(item, type) {
+      this.itemsEdit = item;
+      console.log("ITEMS EDIT" + item.COD);
+      if (type == "REMOVE") this.showModalRemove = !this.showModalRemove;
+      if (type == "EDIT") this.showModalEdit = !this.showModalEdit;
     },
   },
 };

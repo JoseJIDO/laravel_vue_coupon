@@ -25,6 +25,10 @@ js/adm/CouponComponent:
 
 commons/commons.js
 - Added method to request API with AXIOS.
+
+### Changed
+
+
 ---
 
 ## 🔖 [0.0.2] 

@@ -118,7 +118,7 @@
         <script>
             // init background slide images
             $('.login-bg').backstretch([
-                "{{ asset('img/jido1.jpg') }}",
+                "{{ asset('img/jido1.png') }}",
                 "{{ asset('img/bg2.jpg') }}",
             ], {
                 fade: 1000,
