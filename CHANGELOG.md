@@ -13,6 +13,8 @@ views/login
 
 js/adm/CouponComponent:
 - Created component to adm coupon.
+- Created methods to validation request.
+- Added inputs form coupon.
 
 js/utils/LoadComponent:
 - Created component to load async methods.
@@ -28,6 +30,13 @@ commons/commons.js
 
 ### Changed
 
+login/login.blade.php
+- Changed image background.
+
+### Removed
+
+public/img:
+- Removed image with low resolution.
 
 ---
 
